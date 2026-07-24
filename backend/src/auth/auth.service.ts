@@ -1,12 +1,19 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, BadRequestException } from '@nestjs/common';
+import { isStellarAccountAddress } from '../common/utils/stellar-address';
 
 @Injectable()
 export class AuthService {
   validateStellarAddress(address: string): boolean {
-    return address.startsWith('G') && address.length === 56;
+    return isStellarAccountAddress(address);
   }
 
   async createSession(stellarAddress: string) {
-    return { userId: stellarAddress, token: Buffer.from(stellarAddress).toString('base64') };
+    if (!isStellarAccountAddress(stellarAddress)) {
+      throw new BadRequestException('Invalid Stellar address');
+    }
+    return {
+      userId: stellarAddress,
+      token: Buffer.from(stellarAddress).toString('base64'),
+    };
   }
 }
